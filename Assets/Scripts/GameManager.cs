@@ -96,6 +96,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void StartGame()
     {
+        Debug.Log("GameManager.StartGame() called!");
         isGameActive = true;
         gameTimer = 0f;
         currentScore = 0;
@@ -106,11 +107,23 @@ public class GameManager : MonoBehaviour
         // Update UI
         if (uiManager != null)
         {
+            Debug.Log("Updating UI...");
             uiManager.ShowGameUI(true);
             uiManager.UpdateScore(currentScore);
+            uiManager.UpdateTimer(gameTimer, maxGameTime);
+        }
+        else
+        {
+            Debug.LogWarning("UIManager is null!");
         }
         
-        Debug.Log("Game Started!");
+        // Reset player if exists
+        if (player != null)
+        {
+            player.ResetPlayer();
+        }
+        
+        Debug.Log("Game Started! isGameActive = " + isGameActive);
     }
     
     /// <summary>

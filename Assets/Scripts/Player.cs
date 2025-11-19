@@ -85,7 +85,19 @@ public class Player : MonoBehaviour
         if (rb == null)
         {
             rb = gameObject.AddComponent<Rigidbody>();
-            rb.freezeRotation = true;
+        }
+        // Configure Rigidbody for character controller
+        rb.freezeRotation = true;
+        rb.useGravity = true; // Keep gravity for physics collisions
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY;
+        
+        // Ensure player is above ground
+        if (transform.position.y <= 0.1f)
+        {
+            Vector3 pos = transform.position;
+            pos.y = 1f; // Set to safe height above ground
+            transform.position = pos;
+            Debug.Log("Player position adjusted to Y=1 to prevent falling through ground");
         }
         
         // Find references
@@ -110,9 +122,19 @@ public class Player : MonoBehaviour
         
         if (moveDirection.magnitude > 0.1f)
         {
-            // Move player
+            // Move player using Rigidbody to work with physics
             Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
-            transform.position += movement;
+            
+            // Use MovePosition for smooth physics-based movement
+            if (rb != null)
+            {
+                rb.MovePosition(transform.position + movement);
+            }
+            else
+            {
+                // Fallback to direct position if no Rigidbody
+                transform.position += movement;
+            }
             
             // Rotate player to face movement direction
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);

@@ -100,11 +100,24 @@ public class UIManager : MonoBehaviour
             difficultyButton.onClick.AddListener(OnDifficultyButtonClicked);
         }
         
-        // Show start panel initially
+        // Show start panel initially (if it exists)
         ShowStartScreen(true);
         ShowGameUI(false);
         ShowGameOverScreen(false);
         ShowWinScreen(false);
+        
+        // If no start panel exists but we have a start button, make sure it's visible
+        if (startPanel == null && startButton != null)
+        {
+            startButton.gameObject.SetActive(true);
+        }
+        
+        // If restart button exists but no panels, make it work as start button too
+        if (restartButton != null && startButton == null)
+        {
+            // Restart button can act as start button if no start button exists
+            Debug.Log("No start button found. Restart button will work as start button.");
+        }
     }
     
     /// <summary>
@@ -211,6 +224,8 @@ public class UIManager : MonoBehaviour
         if (gameUIPanel != null)
         {
             gameUIPanel.SetActive(show);
+            // Fix panel to not block clicks
+            FixPanelRaycast(gameUIPanel, false);
         }
     }
     
@@ -223,6 +238,8 @@ public class UIManager : MonoBehaviour
         if (startPanel != null)
         {
             startPanel.SetActive(show);
+            // Fix panel to not block clicks if it's just a background
+            FixPanelRaycast(startPanel, false);
         }
     }
     
@@ -324,34 +341,91 @@ public class UIManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Handles start button click
+    /// Handles start button click (public for Unity Inspector)
     /// </summary>
-    private void OnStartButtonClicked()
+    public void OnStartButtonClicked()
     {
+        Debug.Log("Start Button Clicked!");
+        
+        if (gameManager == null)
+        {
+            gameManager = FindObjectOfType<GameManager>();
+            Debug.Log("Searching for GameManager...");
+        }
+        
         if (gameManager != null)
         {
+            Debug.Log("GameManager found! Starting game...");
             gameManager.StartGame();
             ShowStartScreen(false);
-        }
-    }
-    
-    /// <summary>
-    /// Handles restart button click
-    /// </summary>
-    private void OnRestartButtonClicked()
-    {
-        if (gameManager != null)
-        {
-            gameManager.RestartGame();
             ShowGameOverScreen(false);
             ShowWinScreen(false);
+            
+            // Hide start button
+            if (startButton != null)
+            {
+                startButton.gameObject.SetActive(false);
+            }
+            
+            // Show game UI elements
+            ShowGameUI(true);
+        }
+        else
+        {
+            Debug.LogError("GameManager not found! Make sure GameManager exists in the scene.");
         }
     }
     
     /// <summary>
-    /// Handles difficulty button click
+    /// Handles restart button click (public for Unity Inspector)
     /// </summary>
-    private void OnDifficultyButtonClicked()
+    public void OnRestartButtonClicked()
+    {
+        Debug.Log("Restart Button Clicked!");
+        
+        if (gameManager == null)
+        {
+            gameManager = FindObjectOfType<GameManager>();
+            Debug.Log("Searching for GameManager...");
+        }
+        
+        if (gameManager != null)
+        {
+            Debug.Log("GameManager found!");
+            // If game hasn't started yet, start it. Otherwise restart.
+            if (!gameManager.IsGameActive())
+            {
+                Debug.Log("Game not active, starting game...");
+                gameManager.StartGame();
+                ShowStartScreen(false);
+                
+                // Hide restart button (it will show again when game ends)
+                if (restartButton != null)
+                {
+                    restartButton.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                Debug.Log("Game active, restarting...");
+                gameManager.RestartGame();
+            }
+            ShowGameOverScreen(false);
+            ShowWinScreen(false);
+            
+            // Show game UI
+            ShowGameUI(true);
+        }
+        else
+        {
+            Debug.LogError("GameManager not found! Make sure GameManager exists in the scene.");
+        }
+    }
+    
+    /// <summary>
+    /// Handles difficulty button click (public for Unity Inspector)
+    /// </summary>
+    public void OnDifficultyButtonClicked()
     {
         if (gameManager != null)
         {
@@ -376,6 +450,29 @@ public class UIManager : MonoBehaviour
         UpdateScore(score);
         UpdateHealth(health, maxHealth);
         UpdateTimer(timer, maxTimer);
+    }
+    
+    /// <summary>
+    /// Fixes panel raycast target to prevent blocking clicks (method with parameters)
+    /// </summary>
+    /// <param name="panel">Panel GameObject to fix</param>
+    /// <param name="blockClicks">Whether panel should block clicks</param>
+    private void FixPanelRaycast(GameObject panel, bool blockClicks)
+    {
+        if (panel == null) return;
+        
+        UnityEngine.UI.Image image = panel.GetComponent<UnityEngine.UI.Image>();
+        if (image != null)
+        {
+            image.raycastTarget = blockClicks;
+            // If not blocking, make it transparent
+            if (!blockClicks)
+            {
+                Color panelColor = image.color;
+                panelColor.a = 0f; // Fully transparent
+                image.color = panelColor;
+            }
+        }
     }
 }
 
