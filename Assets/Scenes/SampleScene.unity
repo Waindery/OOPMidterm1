@@ -1234,8 +1234,8 @@ MonoBehaviour:
   scorePrefix: 
   healthPrefix: 
   timerPrefix: 
-  normalTextColor: {r: 0, g: 0, b: 0, a: 0}
-  warningTextColor: {r: 0, g: 0, b: 0, a: 0}
+  normalTextColor: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 0}
+  warningTextColor: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 0}
   currentScoreDisplay: 0
   currentHealthDisplay: 0
   currentTimerDisplay: 0
