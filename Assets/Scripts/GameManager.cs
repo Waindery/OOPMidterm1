@@ -2,50 +2,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// GameManager class controls the overall game flow, timer, spawning, and win/lose logic.
-/// Demonstrates OOP concepts: encapsulation, method parameters, return values, and class interactions.
-/// </summary>
 public class GameManager : MonoBehaviour
 {
-    // Fields (minimum 5 required)
     [Header("Game Settings")]
-    public float gameTimer;              // Current game time
-    public float maxGameTime;            // Maximum time for the game
-    public int currentScore;              // Player's current score
-    public int targetScore;               // Score needed to win
-    public bool isGameActive;             // Whether the game is currently running
+    public float gameTimer;              
+    public float maxGameTime;            
+    public int currentScore;              
+    public int targetScore;               
+    public bool isGameActive;             
     
     [Header("Spawn Settings")]
-    public GameObject enemyPrefab;        // Prefab for enemy objects
-    public GameObject itemPrefab;         // Prefab for item objects
-    public float spawnInterval;           // Time between spawns
-    public int maxEnemies;                // Maximum enemies on screen
-    public int maxItems;                  // Maximum items on screen
+    public GameObject enemyPrefab;        
+    public GameObject itemPrefab;         
+    public float spawnInterval;          
+    public int maxEnemies;                
+    public int maxItems;                  
     
     [Header("Difficulty Settings")]
-    public int difficultyLevel;           // Current difficulty (1-3)
-    public float enemySpeedMultiplier;    // Speed multiplier for enemies
-    public float spawnRateMultiplier;     // Spawn rate multiplier
+    public int difficultyLevel;           
+    public float enemySpeedMultiplier;    
+    public float spawnRateMultiplier;     
     
-    // Private fields
-    private float spawnTimer;             // Timer for spawning
-    private List<GameObject> activeEnemies; // List of active enemies
-    private List<GameObject> activeItems;   // List of active items
-    private UIManager uiManager;           // Reference to UI Manager
-    private Player player;                 // Reference to Player
+    private float spawnTimer;            
+    private List<GameObject> activeEnemies; 
+    private List<GameObject> activeItems;   
+    private UIManager uiManager;           
+    private Player player;                 
     
-    /// <summary>
-    /// Unity Start method - initializes the game
-    /// </summary>
     void Start()
     {
         InitializeGame();
     }
     
-    /// <summary>
-    /// Unity Update method - handles game loop
-    /// </summary>
     void Update()
     {
         if (isGameActive)
@@ -57,15 +45,12 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Initializes the game with default values
-    /// </summary>
     public void InitializeGame()
     {
         gameTimer = 0f;
         maxGameTime = 60f;
         currentScore = 0;
-        targetScore = 10;
+        targetScore = 150;
         isGameActive = false;
         difficultyLevel = 1;
         enemySpeedMultiplier = 1f;
@@ -78,7 +63,6 @@ public class GameManager : MonoBehaviour
         activeEnemies = new List<GameObject>();
         activeItems = new List<GameObject>();
         
-        // Find references
         uiManager = FindObjectOfType<UIManager>();
         player = FindObjectOfType<Player>();
         
@@ -91,9 +75,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game initialized. Press Start to begin!");
     }
     
-    /// <summary>
-    /// Starts the game
-    /// </summary>
     public void StartGame()
     {
         Debug.Log("GameManager.StartGame() called!");
@@ -101,10 +82,8 @@ public class GameManager : MonoBehaviour
         gameTimer = 0f;
         currentScore = 0;
         
-        // Clear existing objects
         ClearAllObjects();
         
-        // Update UI
         if (uiManager != null)
         {
             Debug.Log("Updating UI...");
@@ -117,7 +96,6 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("UIManager is null!");
         }
         
-        // Reset player if exists
         if (player != null)
         {
             player.ResetPlayer();
@@ -126,9 +104,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Started! isGameActive = " + isGameActive);
     }
     
-    /// <summary>
-    /// Stops the game
-    /// </summary>
     public void StopGame()
     {
         isGameActive = false;
@@ -140,9 +115,6 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Restarts the game
-    /// </summary>
     public void RestartGame()
     {
         StopGame();
@@ -150,9 +122,6 @@ public class GameManager : MonoBehaviour
         StartGame();
     }
     
-    /// <summary>
-    /// Updates the game timer
-    /// </summary>
     private void UpdateGameTimer()
     {
         gameTimer += Time.deltaTime;
@@ -163,9 +132,6 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Handles spawning of enemies and items
-    /// </summary>
     private void HandleSpawning()
     {
         spawnTimer += Time.deltaTime;
@@ -175,13 +141,11 @@ public class GameManager : MonoBehaviour
         {
             spawnTimer = 0f;
             
-            // Spawn enemy if under limit
             if (activeEnemies.Count < maxEnemies)
             {
                 SpawnEnemy();
             }
             
-            // Spawn item if under limit
             if (activeItems.Count < maxItems)
             {
                 SpawnItem();
@@ -189,17 +153,13 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Spawns an enemy at a random position
-    /// </summary>
     private void SpawnEnemy()
     {
         if (enemyPrefab == null) return;
         
-        Vector3 spawnPosition = GetRandomSpawnPosition();
+        Vector3 spawnPosition = GetRandomSpawnPosition(1.0f);
         GameObject enemy = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
         
-        // Set enemy speed based on difficulty
         Enemy enemyScript = enemy.GetComponent<Enemy>();
         if (enemyScript != null)
         {
@@ -209,33 +169,22 @@ public class GameManager : MonoBehaviour
         activeEnemies.Add(enemy);
     }
     
-    /// <summary>
-    /// Spawns an item at a random position
-    /// </summary>
     private void SpawnItem()
     {
         if (itemPrefab == null) return;
         
-        Vector3 spawnPosition = GetRandomSpawnPosition();
+        Vector3 spawnPosition = GetRandomSpawnPosition(0.75f);
         GameObject item = Instantiate(itemPrefab, spawnPosition, Quaternion.identity);
         activeItems.Add(item);
     }
     
-    /// <summary>
-    /// Gets a random spawn position on the map
-    /// </summary>
-    /// <returns>Random Vector3 position</returns>
-    private Vector3 GetRandomSpawnPosition()
+    private Vector3 GetRandomSpawnPosition(float height = 0.5f)
     {
         float x = Random.Range(-8f, 8f);
         float z = Random.Range(-8f, 8f);
-        return new Vector3(x, 0.5f, z);
+        return new Vector3(x, height, z);
     }
     
-    /// <summary>
-    /// Adds score to the player (method with parameters)
-    /// </summary>
-    /// <param name="points">Points to add to score</param>
     public void AddScore(int points)
     {
         currentScore += points;
@@ -248,21 +197,12 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Score added: {points}. Total: {currentScore}");
     }
     
-    /// <summary>
-    /// Overloaded method: Adds score with multiplier
-    /// </summary>
-    /// <param name="points">Base points</param>
-    /// <param name="multiplier">Score multiplier</param>
     public void AddScore(int points, float multiplier)
     {
         int finalPoints = Mathf.RoundToInt(points * multiplier);
         AddScore(finalPoints);
     }
     
-    /// <summary>
-    /// Removes an enemy from the active list
-    /// </summary>
-    /// <param name="enemy">Enemy GameObject to remove</param>
     public void RemoveEnemy(GameObject enemy)
     {
         if (activeEnemies.Contains(enemy))
@@ -271,10 +211,6 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Removes an item from the active list
-    /// </summary>
-    /// <param name="item">Item GameObject to remove</param>
     public void RemoveItem(GameObject item)
     {
         if (activeItems.Contains(item))
@@ -283,50 +219,37 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Sets the difficulty level (method with parameters)
-    /// </summary>
-    /// <param name="level">Difficulty level (1-3)</param>
     public void SetDifficulty(int level)
     {
         difficultyLevel = Mathf.Clamp(level, 1, 3);
         
-        // Adjust game parameters based on difficulty
         switch (difficultyLevel)
         {
             case 1:
                 enemySpeedMultiplier = 1f;
                 spawnRateMultiplier = 1f;
-                targetScore = 10;
+                targetScore = 250;
                 break;
             case 2:
                 enemySpeedMultiplier = 1.5f;
                 spawnRateMultiplier = 1.3f;
-                targetScore = 15;
+                targetScore = 275;
                 break;
             case 3:
                 enemySpeedMultiplier = 2f;
                 spawnRateMultiplier = 1.6f;
-                targetScore = 20;
+                targetScore = 300;
                 break;
         }
         
         Debug.Log($"Difficulty set to level {difficultyLevel}");
     }
     
-    /// <summary>
-    /// Gets the current difficulty level (method with return value)
-    /// </summary>
-    /// <returns>Current difficulty level</returns>
     public int GetDifficulty()
     {
         return difficultyLevel;
     }
     
-    /// <summary>
-    /// Calculates score multiplier based on time remaining (method with return value)
-    /// </summary>
-    /// <returns>Score multiplier</returns>
     public float CalculateScoreMultiplier()
     {
         if (maxGameTime <= 0) return 1f;
@@ -337,9 +260,6 @@ public class GameManager : MonoBehaviour
         return Mathf.Clamp(multiplier, 1f, 2f);
     }
     
-    /// <summary>
-    /// Checks if win condition is met
-    /// </summary>
     private void CheckWinCondition()
     {
         if (currentScore >= targetScore)
@@ -348,9 +268,6 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Checks if lose condition is met
-    /// </summary>
     private void CheckLoseCondition()
     {
         if (gameTimer >= maxGameTime)
@@ -364,9 +281,6 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Handles win condition
-    /// </summary>
     private void WinGame()
     {
         isGameActive = false;
@@ -379,10 +293,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("You Win!");
     }
     
-    /// <summary>
-    /// Handles lose condition
-    /// </summary>
-    /// <param name="reason">Reason for losing</param>
     public void LoseGame(string reason)
     {
         isGameActive = false;
@@ -395,12 +305,8 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Game Over: {reason}");
     }
     
-    /// <summary>
-    /// Clears all spawned objects
-    /// </summary>
     private void ClearAllObjects()
     {
-        // Clear enemies
         foreach (GameObject enemy in activeEnemies)
         {
             if (enemy != null)
@@ -410,7 +316,6 @@ public class GameManager : MonoBehaviour
         }
         activeEnemies.Clear();
         
-        // Clear items
         foreach (GameObject item in activeItems)
         {
             if (item != null)
@@ -421,13 +326,8 @@ public class GameManager : MonoBehaviour
         activeItems.Clear();
     }
     
-    /// <summary>
-    /// Gets the current game state (method with return value)
-    /// </summary>
-    /// <returns>True if game is active, false otherwise</returns>
     public bool IsGameActive()
     {
         return isGameActive;
     }
 }
-

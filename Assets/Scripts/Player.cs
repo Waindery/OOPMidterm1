@@ -2,52 +2,41 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Player class handles player movement, actions, health, and interactions with other objects.
-/// Demonstrates OOP concepts: encapsulation, method parameters, return values, and class interactions.
-/// </summary>
 public class Player : MonoBehaviour
 {
-    // Fields (minimum 5 required)
     [Header("Movement Settings")]
-    public float moveSpeed;               // Speed of player movement
-    public float rotationSpeed;          // Speed of player rotation
-    public Vector3 currentVelocity;      // Current velocity vector
+    public float moveSpeed;               
+    public float rotationSpeed;          
+    public Vector3 currentVelocity;      
     
     [Header("Health Settings")]
-    public int maxHealth;                // Maximum health points
-    public int currentHealth;             // Current health points
-    public float invincibilityDuration;  // Duration of invincibility after taking damage
-    public bool isInvincible;            // Whether player is currently invincible
+    public int maxHealth;                
+    public int currentHealth;             
+    public float invincibilityDuration;  
+    public bool isInvincible;            
     
     [Header("Combat Settings")]
-    public int attackDamage;             // Damage dealt by player
-    public float attackRange;            // Range of player's attack
-    public float attackCooldown;         // Cooldown between attacks
+    public int attackDamage;
+    public float attackRange; 
+    public float attackCooldown;        
     
     [Header("Player Stats")]
-    public string playerName;            // Player's name
-    public int itemsCollected;           // Number of items collected
-    public int enemiesDefeated;          // Number of enemies defeated
+    public string playerName;
+    public int itemsCollected;
+    public int enemiesDefeated;
     
     // Private fields
-    private float invincibilityTimer;    // Timer for invincibility
-    private float attackTimer;           // Timer for attack cooldown
-    private GameManager gameManager;     // Reference to GameManager
-    private UIManager uiManager;         // Reference to UIManager
-    private Rigidbody rb;                // Rigidbody component
+    private float invincibilityTimer;
+    private float attackTimer;
+    private GameManager gameManager;
+    private UIManager uiManager;
+    private Rigidbody rb;
     
-    /// <summary>
-    /// Unity Start method - initializes the player
-    /// </summary>
     void Start()
     {
         InitializePlayer();
     }
     
-    /// <summary>
-    /// Unity Update method - handles player input and updates
-    /// </summary>
     void Update()
     {
         if (gameManager != null && gameManager.IsGameActive())
@@ -58,13 +47,10 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Initializes the player with default values
-    /// </summary>
     public void InitializePlayer()
     {
-        moveSpeed = 5f;
-        rotationSpeed = 10f;
+        moveSpeed = 25f;
+        rotationSpeed = 25f;
         maxHealth = 100;
         currentHealth = maxHealth;
         invincibilityDuration = 1f;
@@ -80,27 +66,27 @@ public class Player : MonoBehaviour
         attackTimer = 0f;
         currentVelocity = Vector3.zero;
         
-        // Get components
         rb = GetComponent<Rigidbody>();
         if (rb == null)
         {
             rb = gameObject.AddComponent<Rigidbody>();
         }
-        // Configure Rigidbody for character controller
-        rb.freezeRotation = true;
-        rb.useGravity = true; // Keep gravity for physics collisions
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY;
         
-        // Ensure player is above ground
+        rb.useGravity = true;
+        rb.constraints = RigidbodyConstraints.FreezePositionY |
+                         RigidbodyConstraints.FreezeRotationX |
+                         RigidbodyConstraints.FreezeRotationY |
+                         RigidbodyConstraints.FreezeRotationZ;
+        
+        
         if (transform.position.y <= 0.1f)
         {
             Vector3 pos = transform.position;
-            pos.y = 1f; // Set to safe height above ground
+            pos.y = 1f;
             transform.position = pos;
             Debug.Log("Player position adjusted to Y=1 to prevent falling through ground");
         }
         
-        // Find references
         gameManager = FindObjectOfType<GameManager>();
         uiManager = FindObjectOfType<UIManager>();
         
@@ -110,9 +96,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Handles player movement based on input
-    /// </summary>
     private void HandleMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
@@ -122,21 +105,17 @@ public class Player : MonoBehaviour
         
         if (moveDirection.magnitude > 0.1f)
         {
-            // Move player using Rigidbody to work with physics
             Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
             
-            // Use MovePosition for smooth physics-based movement
             if (rb != null)
             {
                 rb.MovePosition(transform.position + movement);
             }
             else
             {
-                // Fallback to direct position if no Rigidbody
                 transform.position += movement;
             }
             
-            // Rotate player to face movement direction
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             
@@ -148,9 +127,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Handles player attack input
-    /// </summary>
     private void HandleAttack()
     {
         attackTimer += Time.deltaTime;
@@ -162,9 +138,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Player attacks nearby enemies (method with no parameters)
-    /// </summary>
     public void Attack()
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attackRange);
@@ -180,10 +153,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Overloaded method: Player attacks with custom damage
-    /// </summary>
-    /// <param name="damage">Damage amount</param>
     public void Attack(int damage)
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attackRange);
@@ -199,10 +168,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Player takes damage (method with parameters)
-    /// </summary>
-    /// <param name="damage">Amount of damage to take</param>
     public void TakeDamage(int damage)
     {
         if (isInvincible) return;
@@ -210,7 +175,6 @@ public class Player : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Max(0, currentHealth);
         
-        // Activate invincibility
         isInvincible = true;
         invincibilityTimer = 0f;
         
@@ -227,10 +191,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Player heals (method with parameters)
-    /// </summary>
-    /// <param name="healAmount">Amount of health to restore</param>
     public void Heal(int healAmount)
     {
         currentHealth += healAmount;
@@ -244,9 +204,6 @@ public class Player : MonoBehaviour
         Debug.Log($"{playerName} healed for {healAmount}! Health: {currentHealth}/{maxHealth}");
     }
     
-    /// <summary>
-    /// Updates invincibility timer
-    /// </summary>
     private void UpdateInvincibility()
     {
         if (isInvincible)
@@ -261,21 +218,16 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Collects an item (method with parameters)
-    /// </summary>
-    /// <param name="item">Item that was collected</param>
     public void CollectItem(Item item)
     {
         if (item == null) return;
         
         itemsCollected++;
         
-        // Get item value
         int itemValue = item.GetValue();
         string itemType = item.GetItemType();
         
-        // Apply item effects
+        
         if (itemType == "Health")
         {
             Heal(itemValue);
@@ -292,57 +244,34 @@ public class Player : MonoBehaviour
         Debug.Log($"{playerName} collected {itemType} item worth {itemValue}!");
     }
     
-    /// <summary>
-    /// Gets current health (method with return value)
-    /// </summary>
-    /// <returns>Current health value</returns>
     public int GetHealth()
     {
         return currentHealth;
     }
     
-    /// <summary>
-    /// Gets maximum health (method with return value)
-    /// </summary>
-    /// <returns>Maximum health value</returns>
     public int GetMaxHealth()
     {
         return maxHealth;
     }
     
-    /// <summary>
-    /// Calculates health percentage (method with return value)
-    /// </summary>
-    /// <returns>Health percentage (0-1)</returns>
     public float GetHealthPercentage()
     {
         if (maxHealth <= 0) return 0f;
         return (float)currentHealth / (float)maxHealth;
     }
     
-    /// <summary>
-    /// Sets player name (method with parameters)
-    /// </summary>
-    /// <param name="name">New player name</param>
     public void SetPlayerName(string name)
     {
         playerName = name;
         Debug.Log($"Player name set to: {playerName}");
     }
     
-    /// <summary>
-    /// Increases movement speed (method with parameters)
-    /// </summary>
-    /// <param name="speedBoost">Speed increase amount</param>
     public void IncreaseSpeed(float speedBoost)
     {
         moveSpeed += speedBoost;
         Debug.Log($"Speed increased by {speedBoost}. New speed: {moveSpeed}");
     }
     
-    /// <summary>
-    /// Handles player death
-    /// </summary>
     private void Die()
     {
         Debug.Log($"{playerName} has died!");
@@ -353,13 +282,8 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Unity OnTriggerEnter - handles collisions with triggers
-    /// </summary>
-    /// <param name="other">Collider that entered the trigger</param>
     void OnTriggerEnter(Collider other)
     {
-        // Check for item collection
         Item item = other.GetComponent<Item>();
         if (item != null)
         {
@@ -367,7 +291,6 @@ public class Player : MonoBehaviour
             item.Collect();
         }
         
-        // Check for enemy collision
         Enemy enemy = other.GetComponent<Enemy>();
         if (enemy != null && !isInvincible)
         {
@@ -375,10 +298,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Unity OnCollisionEnter - handles collisions with colliders
-    /// </summary>
-    /// <param name="collision">Collision information</param>
     void OnCollisionEnter(Collision collision)
     {
         Enemy enemy = collision.gameObject.GetComponent<Enemy>();
@@ -388,9 +307,6 @@ public class Player : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Resets player to initial state
-    /// </summary>
     public void ResetPlayer()
     {
         currentHealth = maxHealth;
